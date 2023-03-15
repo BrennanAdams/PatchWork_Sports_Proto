@@ -6,6 +6,9 @@
 //
 
 import SwiftUI
+import AVKit
+
+
 
 @main
 struct PatchworkSportsApp: App {
@@ -20,6 +23,13 @@ struct Workout: Identifiable {
     let id = UUID()
     let name: String
     let completionRate: Double
+}
+
+
+struct Workout_1: Identifiable {
+    let id = UUID()
+    let name: String
+    let description: String
 }
 
 struct MainView: View {
@@ -46,14 +56,75 @@ struct MainView: View {
     }
 }
 
+struct WorkoutDetailView: View {
+    let workout: Workout_1
+    @State private var videoURL = ""
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 10) {
+                Text(workout.name)
+                    .font(.largeTitle)
+                    .bold()
+
+                Text(workout.description)
+                    .padding(.vertical)
+
+                Text("Video")
+                    .font(.title2)
+                    .bold()
+
+                TextField("YouTube video URL", text: $videoURL)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .padding(.bottom)
+
+                if let url = URL(string: videoURL),
+                   let videoID = extractYoutubeId(from: url.absoluteString) {
+                    VideoPlayer(player: AVPlayer(url: URL(string: "https://www.youtube.com/embed/\(videoID)")!))
+                        .frame(height: 200)
+                }
+            }
+            .padding()
+        }
+        .navigationTitle("Workout Details")
+    }
+
+    func extractYoutubeId(from url: String) -> String? {
+        let pattern = #"((?<=(v|V)/)|(?<=be/)|(?<=(\?|\&)v=)|(?<=embed/))([\w-]++)"#
+        let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive)
+        let range = NSRange(location: 0, length: url.count)
+
+        guard let match = regex?.firstMatch(in: url, options: [], range: range) else {
+            return nil
+        }
+
+        return (url as NSString).substring(with: match.range)
+    }
+}
+
+
+
 struct WorkoutsView: View {
+    private let bodybuildingWorkouts = [
+            Workout_1(name: "Bench Press", description: "The bench press is a compound exercise that targets the chest, shoulders, and triceps."),
+            Workout_1(name: "Squat", description: "Squats are a compound exercise that targets the quadriceps, hamstrings, and glutes."),
+            Workout_1(name: "Deadlift", description: "Deadlifts are a compound exercise that targets the lower back, glutes, and hamstrings."),
+            Workout_1(name: "Shoulder Press", description: "The shoulder press is a compound exercise that targets the shoulders and triceps.")
+        ]
+
     var body: some View {
         NavigationView {
-            Text("Workouts")
-                .navigationTitle("Workouts")
+            List(bodybuildingWorkouts) { workout in
+                NavigationLink(destination: WorkoutDetailView(workout: workout)) {
+                    Text(workout.name)
+                }
+            }
+            .navigationTitle("Bodybuilding Workouts")
         }
     }
 }
+
+
 
 struct ProgressView: View {
     // Sample data
