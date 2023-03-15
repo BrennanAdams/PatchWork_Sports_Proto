@@ -58,7 +58,7 @@ struct MainView: View {
 
 struct WorkoutDetailView: View {
     let workout: Workout_1
-    @State private var videoURL = ""
+    @State private var videoURL = "https://www.youtube.com/watch?v=gRVjAtPip0Y"
 
     var body: some View {
         ScrollView {
